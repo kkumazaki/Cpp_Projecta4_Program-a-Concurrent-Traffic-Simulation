@@ -90,9 +90,10 @@ void Intersection::addVehicleToQueue(std::shared_ptr<Vehicle> vehicle)
     //while (_trafficLight.getCurrentPhase() == TrafficLightPhase::red){
     //    _trafficLight.waitForGreen();
     //}
-    TrafficLight trafficLight;
-    if (trafficLight.getCurrentPhase() == TrafficLightPhase::red){
-        trafficLight.waitForGreen();
+    
+    if (_trafficLight.getCurrentPhase() == TrafficLightPhase::red){
+        _trafficLight.waitForGreen();
+        std::cout<<"wait for green light";
     }
 
     lck.unlock();

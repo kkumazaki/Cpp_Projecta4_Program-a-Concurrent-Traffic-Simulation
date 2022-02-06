@@ -16,7 +16,8 @@ T MessageQueue<T>::receive()
     _condition.wait(uLock, [this] { return !_queue.empty(); });
 
     T msg = std::move(_queue.back());
-    _queue.pop_back();
+    //_queue.pop_back();
+    _queue.clear(); // It's better to use clear(), otherwise vehicle keep driving on red signals
     return msg;
 }
 
@@ -49,8 +50,10 @@ void TrafficLight::waitForGreen()
     // runs and repeatedly calls the receive function on the message queue. 
     // Once it receives TrafficLightPhase::green, the method returns.
     while (true){
-        if(msgQueue->receive()==TrafficLightPhase::green)
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        if(msgQueue->receive()==TrafficLightPhase::green){
             return;
+        }
     }
 }
 
@@ -78,23 +81,24 @@ void TrafficLight::cycleThroughPhases()
     // to the message queue using move semantics. The cycle duration should be a random value between 4 and 6 seconds. 
     // Also, the while-loop should use std::this_thread::sleep_for to wait 1ms between two cycles. 
     std::chrono::system_clock::time_point  endTime;
-    double elapsed;
+    int elapsed;
 
     std::random_device seed_gen;
     std::mt19937 engine(seed_gen());
-    std::uniform_real_distribution<> dist(4.0, 6.0);
-    double randomCycle = dist(engine);
+    std::uniform_int_distribution<> dist(4, 6);
+    int randomCycle = dist(engine);
     std::chrono::time_point<std::chrono::system_clock> startTime = std::chrono::system_clock::now();
 
-    bool whileLoop = true;
+    //bool whileLoop = true;
 
-    while (whileLoop){
+    //while (whileLoop){
+    while (true){
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
         endTime = std::chrono::system_clock::now();
         elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime-startTime).count();
 
-        std::cout<<"elapsed time:" << elapsed << std::endl;
+        std::cout<<"elapsed time:"<< elapsed << std::endl;
       
         if(elapsed > randomCycle){
             if(_currentPhase == TrafficLightPhase::red)
@@ -106,7 +110,7 @@ void TrafficLight::cycleThroughPhases()
             msgQueue->send(std::move(_currentPhase));
 
             startTime = std::chrono::system_clock::now();
-            whileLoop = false;
+            //whileLoop = false;
         }
         
     }
